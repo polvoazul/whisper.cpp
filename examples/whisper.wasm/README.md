@@ -1,3 +1,7 @@
+# Editing this folder to customise wasm
+
+
+
 # whisper.wasm
 
 Inference of [OpenAI's Whisper ASR model](https://github.com/openai/whisper) inside the browser
