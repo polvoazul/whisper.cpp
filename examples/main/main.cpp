@@ -87,6 +87,7 @@ struct whisper_params {
     bool print_special   = false;
     bool print_colors    = false;
     bool print_progress  = false;
+    bool print_json      = false;
     bool no_timestamps   = false;
     bool log_score       = false;
 
@@ -155,6 +156,7 @@ bool whisper_params_parse(int argc, char ** argv, whisper_params & params) {
         else if (arg == "-ps"   || arg == "--print-special")   { params.print_special   = true; }
         else if (arg == "-pc"   || arg == "--print-colors")    { params.print_colors    = true; }
         else if (arg == "-pp"   || arg == "--print-progress")  { params.print_progress  = true; }
+        else if (arg == "-pj"   || arg == "--print-json")      { params.print_json      = true; }
         else if (arg == "-nt"   || arg == "--no-timestamps")   { params.no_timestamps   = true; }
         else if (arg == "-l"    || arg == "--language")        { params.language        = argv[++i]; }
         else if (arg == "-dl"   || arg == "--detect-language") { params.detect_language = true; }
@@ -210,6 +212,7 @@ void whisper_print_usage(int /*argc*/, char ** argv, const whisper_params & para
     fprintf(stderr, "  -ps,       --print-special     [%-7s] print special tokens\n",                           params.print_special ? "true" : "false");
     fprintf(stderr, "  -pc,       --print-colors      [%-7s] print colors\n",                                   params.print_colors ? "true" : "false");
     fprintf(stderr, "  -pp,       --print-progress    [%-7s] print progress\n",                                 params.print_progress ? "true" : "false");
+    fprintf(stderr, "  -pj,       --print-json        [%-7s] print progress as json\n",                         params.print_json ? "true" : "false");
     fprintf(stderr, "  -nt,       --no-timestamps     [%-7s] do not print timestamps\n",                        params.no_timestamps ? "true" : "false");
     fprintf(stderr, "  -l LANG,   --language LANG     [%-7s] spoken language ('auto' for auto-detect)\n",       params.language.c_str());
     fprintf(stderr, "  -dl,       --detect-language   [%-7s] exit after automatically detecting language\n",    params.detect_language ? "true" : "false");
@@ -900,8 +903,9 @@ int main(int argc, char ** argv) {
 
             wparams.strategy = params.beam_size > 1 ? WHISPER_SAMPLING_BEAM_SEARCH : WHISPER_SAMPLING_GREEDY;
 
-            wparams.print_realtime   = false;
+            wparams.print_realtime   = true;
             wparams.print_progress   = params.print_progress;
+            wparams.print_json       = params.print_json;
             wparams.print_timestamps = !params.no_timestamps;
             wparams.print_special    = params.print_special;
             wparams.translate        = params.translate;

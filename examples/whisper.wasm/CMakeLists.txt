@@ -28,6 +28,7 @@ if (WHISPER_WASM_SINGLE_FILE)
         )
 endif()
 
+    # TODO: Try out -s MODULARIZE=1, see what happens
 set_target_properties(${TARGET} PROPERTIES LINK_FLAGS " \
     --bind \
     -s USE_PTHREADS=1 \

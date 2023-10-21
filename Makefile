@@ -343,8 +343,8 @@ CC_SDL=`sdl2-config --cflags --libs`
 SRC_COMMON     = examples/common.cpp examples/common-ggml.cpp
 SRC_COMMON_SDL = examples/common-sdl.cpp
 
-main: examples/main/main.cpp $(SRC_COMMON) ggml.o $(WHISPER_OBJ)
-	$(CXX) $(CXXFLAGS) examples/main/main.cpp $(SRC_COMMON) ggml.o $(WHISPER_OBJ) -o main $(LDFLAGS)
+main: examples/main/main.cpp $(SRC_COMMON) ggml.o $(WHISPER_OBJ) fred.hpp
+	$(CXX) $(CXXFLAGS) examples/main/main.cpp $(SRC_COMMON) ggml.o $(WHISPER_OBJ) -Ifred.hpp -o main $(LDFLAGS)
 	./main -h
 
 bench: examples/bench/bench.cpp ggml.o $(WHISPER_OBJ)

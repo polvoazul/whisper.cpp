@@ -1,3 +1,4 @@
+#include "./fred.hpp"
 #include "whisper.h"
 #ifdef WHISPER_USE_COREML
 #include "coreml/whisper-encoder.h"
@@ -3721,6 +3722,7 @@ struct whisper_full_params whisper_full_default_params(enum whisper_sampling_str
         /*.print_progress    =*/ true,
         /*.print_realtime    =*/ false,
         /*.print_timestamps  =*/ true,
+        /*.print_json        =*/ false,
 
         /*.token_timestamps  =*/ false,
         /*.thold_pt          =*/ 0.01f,
@@ -5021,7 +5023,7 @@ int whisper_full_with_state(
                 int  i0 = 0;
                 auto t0 = seek + 2*(tokens_cur.front().tid - whisper_token_beg(ctx));
 
-                std::string text;
+                TextAndTokens text;
                 bool speaker_turn_next = false;
 
                 for (int i = 0; i < (int) tokens_cur.size(); i++) {
@@ -5030,7 +5032,7 @@ int whisper_full_with_state(
                     //        ctx->vocab.id_to_token[tokens_cur[i].tid].c_str(), tokens_cur[i].pt);
 
                     if (params.print_special || tokens_cur[i].id < whisper_token_eot(ctx)) {
-                        text += whisper_token_to_str(ctx, tokens_cur[i].id);
+                        text.add(whisper_token_to_str(ctx, tokens_cur[i].id), tokens_cur[i].p);
                     }
 
                     // [TDRZ] record if speaker turn was predicted after current segment
@@ -5046,7 +5048,9 @@ int whisper_full_with_state(
                             const auto tt1 = params.speed_up ? 2*t1 : t1;
 
                             if (params.print_realtime) {
-                                if (params.print_timestamps) {
+                                if (params.print_json) {
+                                  print_tokens_as_json(text, to_timestamp(tt0), to_timestamp(tt1));
+                                } else if (params.print_timestamps) {
                                     printf("[%s --> %s]  %s\n", to_timestamp(tt0).c_str(), to_timestamp(tt1).c_str(), text.c_str());
                                 } else {
                                     printf("%s", text.c_str());
@@ -5056,7 +5060,7 @@ int whisper_full_with_state(
 
                             //printf("tt0 = %d, tt1 = %d, text = %s, token = %s, token_id = %d, tid = %d\n", tt0, tt1, text.c_str(), ctx->vocab.id_to_token[tokens_cur[i].id].c_str(), tokens_cur[i].id, tokens_cur[i].tid);
 
-                            result_all.push_back({ tt0, tt1, text, {}, speaker_turn_next });
+                            result_all.push_back({ tt0, tt1, text._text, {}, speaker_turn_next });
                             for (int j = i0; j <= i; j++) {
                                 result_all.back().tokens.push_back(tokens_cur[j]);
                             }
@@ -5075,7 +5079,7 @@ int whisper_full_with_state(
                                 params.new_segment_callback(ctx, state, n_new, params.new_segment_callback_user_data);
                             }
                         }
-                        text = "";
+                        text.clear();
                         while (i < (int) tokens_cur.size() && tokens_cur[i].id > whisper_token_beg(ctx)) {
                             i++;
                         }
@@ -5093,7 +5097,9 @@ int whisper_full_with_state(
                     const auto tt1 = params.speed_up ? 2*t1 : t1;
 
                     if (params.print_realtime) {
-                        if (params.print_timestamps) {
+                        if (params.print_json) {
+                          print_tokens_as_json(text, to_timestamp(tt0), to_timestamp(tt1));
+                        } else if (params.print_timestamps) {
                             printf("[%s --> %s]  %s\n", to_timestamp(tt0).c_str(), to_timestamp(tt1).c_str(), text.c_str());
                         } else {
                             printf("%s", text.c_str());
@@ -5101,7 +5107,7 @@ int whisper_full_with_state(
                         }
                     }
 
-                    result_all.push_back({ tt0, tt1, text, {} , speaker_turn_next });
+                    result_all.push_back({ tt0, tt1, text._text, {} , speaker_turn_next });
                     for (int j = i0; j < (int) tokens_cur.size(); j++) {
                         result_all.back().tokens.push_back(tokens_cur[j]);
                     }
