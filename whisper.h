@@ -4,6 +4,7 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <stdbool.h>
+#include <functional>
 
 #ifdef WHISPER_SHARED
 #    ifdef _WIN32
@@ -333,6 +334,7 @@ extern "C" {
     // If not NULL, called before the encoder starts
     // If it returns false, the computation is aborted
     typedef bool (*whisper_encoder_begin_callback)(struct whisper_context * ctx, struct whisper_state * state, void * user_data);
+    //typedef std::function<bool(struct whisper_context * ctx, struct whisper_state * state, void * user_data)> whisper_encoder_begin_callback;
 
     // Abort callback
     // If not NULL, called before ggml computation

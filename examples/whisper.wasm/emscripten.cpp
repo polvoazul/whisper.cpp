@@ -1,4 +1,4 @@
-#include "whisper.h"
+#include "../../whisper.h"
 
 #include <emscripten.h>
 #include <emscripten/bind.h>
@@ -15,6 +15,8 @@ static inline int mpow2(int n) {
     while (p <= n) p *= 2;
     return p/2;
 }
+
+bool global_should_stop = false;
 
 EMSCRIPTEN_BINDINGS(whisper) {
     emscripten::function("init", emscripten::optional_override([](const std::string & path_model) {
@@ -49,7 +51,10 @@ EMSCRIPTEN_BINDINGS(whisper) {
         }
     }));
 
-    emscripten::function("full_default", emscripten::optional_override([](size_t index, const emscripten::val & audio, const std::string & lang, int nthreads, bool translate) {
+    emscripten::function("full_default", emscripten::optional_override([](
+        size_t index, const emscripten::val & audio, const std::string & lang,
+            int nthreads, bool translate) {
+        global_should_stop = false;
         if (g_worker.joinable()) {
             g_worker.join();
         }
@@ -64,9 +69,13 @@ EMSCRIPTEN_BINDINGS(whisper) {
             return -2;
         }
 
-        struct whisper_full_params params = whisper_full_default_params(whisper_sampling_strategy::WHISPER_SAMPLING_GREEDY);
+        whisper_full_params params = whisper_full_default_params(whisper_sampling_strategy::WHISPER_SAMPLING_GREEDY);
+
+        const auto callback = [](whisper_context *, whisper_state *, void * stopper) -> bool { return !global_should_stop; };
+        params.encoder_begin_callback = callback;
 
         params.print_realtime   = true;
+        params.print_json       = false;
         params.print_progress   = false;
         params.print_timestamps = true;
         params.print_special    = false;
@@ -110,5 +119,9 @@ EMSCRIPTEN_BINDINGS(whisper) {
         }
 
         return 0;
+    }));
+
+    emscripten::function("stop", emscripten::optional_override([]() {
+          global_should_stop = true;
     }));
 }
