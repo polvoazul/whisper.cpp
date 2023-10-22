@@ -24,7 +24,7 @@ struct TextAndTokens {
 
 void print_tokens_as_json(const TextAndTokens& text, const std::string_view start, const std::string_view end) {
     nlohmann::json j {
-      {"full_text", text._text},
+      {"text", text._text},
       {"start", start },
       {"end", end },
       {"tokens", text._tokens}

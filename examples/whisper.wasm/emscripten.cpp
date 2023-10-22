@@ -75,7 +75,7 @@ EMSCRIPTEN_BINDINGS(whisper) {
         params.encoder_begin_callback = callback;
 
         params.print_realtime   = true;
-        params.print_json       = false;
+        params.print_json       = true;
         params.print_progress   = false;
         params.print_timestamps = true;
         params.print_special    = false;
